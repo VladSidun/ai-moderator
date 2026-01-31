@@ -1,10 +1,17 @@
+"""
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH/QkWNMqBAXAVbjPNhoiXjjgV9gm+eublzZ0BKmKKln tvoya_poshta@gmail.com 
+
+
+"""
+
+
 from pydantic import BaseModel, Field
 import random
 from typing import List, Optional
 import httpx
 import asyncio
 
-# Вхідні дані
+TOXIC_THRESHOLD = 0.9
 COMMENTS = [
     "Python is the best language!",
     "I hate errors, they are stupid.",
@@ -18,11 +25,8 @@ class ModerationResult(BaseModel):
   text : str
   is_toxic: bool
   score: float = Field(ge = 0.0, le =1.0)
-  """
-  pydantic Field - це спосіб додати додаткові обмеження або метадані до полів моделі.
-                   У цьому випадку ми використовуємо його, щоб вказати, що score має бути в діапазоні від 0.0 до 1.0 включно.
   
-  """
+  
 
 async def check_text(client: httpx.AsyncClient, text: str, index: int)-> ModerationResult:
   toxic_scale: float = scale_toxic()
@@ -44,15 +48,11 @@ async def check_text(client: httpx.AsyncClient, text: str, index: int)-> Moderat
 
 def scale_toxic():
   return round(random.uniform(0,1), 1)
-  """
-  random.uniform(a, b) --> це функція з модуля random, яка повертає випадкове число з плаваючою комою в діапазоні від a до b.
-  """
+  
 
 def check_is_toxic():
   result= random.choice([0,1])
-  """
-  random.choice(sequence) --> це функція з модуля random, яка вибирає випадковий елемент із непорожньої послідовності (наприклад, список або кортеж).
-  """
+  
   if result == 1:
     return True
   else:
@@ -68,8 +68,14 @@ async def main():
 
     results: List[Optional[ModerationResult]] =  await asyncio.gather(*tasks)
 
+# Changed logic to categorize based on TOXIC_THRESHOLD constant
     for res in results:
-      print(f"Message: {res.text} \t| Toxic: {res.is_toxic}\t| Score: {res.score}\n")
+      if res.is_toxic and res.score >= TOXIC_THRESHOLD:
+        print(f"😡 CRITICAL TOXIC [{res.score}]: {res.text}")
+      elif res.is_toxic:
+        print(f"⚠️ SUSPICIOUS [{res.score}]: {res.text}")
+      else:
+        print(f"✅ CLEAN [{res.score}]: {res.text}")
 
 
 
