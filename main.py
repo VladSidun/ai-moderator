@@ -71,11 +71,11 @@ async def main():
 # Changed logic to categorize based on TOXIC_THRESHOLD constant
     for res in results:
       if res.is_toxic and res.score >= TOXIC_THRESHOLD:
-        print(f"😡 CRITICAL TOXIC [{res.score}]: {res.text}")
+        print(f"😡 CRITICAL TOXIC [{res.score}]:\t {res.text}")
       elif res.is_toxic:
-        print(f"⚠️ SUSPICIOUS [{res.score}]: {res.text}")
+        print(f"⚠️ SUSPICIOUS [{res.score}]:\t {res.text}")
       else:
-        print(f"✅ CLEAN [{res.score}]: {res.text}")
+        print(f"✅ CLEAN [{res.score}]:\t {res.text}")
 
 
 
